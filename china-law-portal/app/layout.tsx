@@ -43,7 +43,7 @@ export default function RootLayout({
                 Search
               </Link>
               <a
-                href="https://github.com"
+                href="https://github.com/CiuuT/CLPP-website"
                 target="_blank"
                 rel="noreferrer"
                 className="hover:underline"
