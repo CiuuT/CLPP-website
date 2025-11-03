@@ -133,12 +133,32 @@ export default async function ArticleDetail({
         </>
       )}
 
-      {(a.data?.sourceIdentification || a.data?.authorsDataDescription || a.data?.sourceDataset) && (
+      {/* Data Section */}
+      {(a.data?.sourceIdentification ||
+        a.data?.authorsDataDescription ||
+        a.data?.sourceDataset) && (
         <>
           <h2 className="mt-8 text-lg font-semibold">Data</h2>
-          {a.data?.sourceIdentification && <p className="mt-2 whitespace-pre-wrap"><strong>Identification:</strong> {a.data.sourceIdentification}</p>}
-          {a.data?.authorsDataDescription && <p className="mt-2 whitespace-pre-wrap"><strong>Author's description:</strong> {a.data.authorsDataDescription}</p>}
-          {a.data?.sourceDataset && <p className="mt-2 whitespace-pre-wrap"><strong>Dataset:</strong> {a.data.sourceDataset}</p>}
+
+          {a.data?.sourceIdentification && (
+            <p className="mt-2 whitespace-pre-wrap">
+              <strong>Data Source Identification:</strong>{" "}
+              {a.data.sourceIdentification}
+            </p>
+          )}
+
+          {a.data?.authorsDataDescription && (
+            <p className="mt-2 whitespace-pre-wrap">
+              <strong>Author&apos;s Data Description:</strong>{" "}
+              {a.data.authorsDataDescription}
+            </p>
+          )}
+
+          {a.data?.sourceDataset && (
+            <p className="mt-2 whitespace-pre-wrap">
+              <strong>Source Dataset:</strong> {a.data.sourceDataset}
+            </p>
+          )}
         </>
       )}
 
