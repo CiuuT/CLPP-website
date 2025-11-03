@@ -20,7 +20,7 @@ export default function Home() {
             Start Searching
           </Link>
           <a
-            href="https://github.com"
+            href="https://github.com/CiuuT/CLPP-website"
             target="_blank"
             rel="noreferrer"
             className="rounded-lg border px-4 py-2 hover:bg-zinc-50"
