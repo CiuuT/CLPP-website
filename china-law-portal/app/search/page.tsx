@@ -11,7 +11,6 @@ type Article = {
   year?: number | string | null;
   abstract?: string;
   summary?: string;
-  theories?: string[];
   methods?: string[];
   keywords?: string[];
   research?: {
@@ -19,6 +18,8 @@ type Article = {
     comparative?: boolean;
     interdisciplinary?: boolean;
   };
+  sourceDataset?: string;
+  data?: { sourceDataset?: string };
 };
 
 function uniqSorted<T>(arr: T[]): T[] {
@@ -26,12 +27,16 @@ function uniqSorted<T>(arr: T[]): T[] {
     String(a).localeCompare(String(b))
   );
 }
+// read Source Dataset from either shape
+function getDataset(a: Article): string | undefined {
+  return a.sourceDataset || a.data?.sourceDataset || undefined;
+}
 
 export default function SearchPage() {
   const articles = data as Article[];
 
   // ---------- build facet options ----------
-  const { years, authors, journals, methods, theories } = useMemo(() => {
+  const { years, authors, journals, methods, datasets } = useMemo(() => {
     const y = new Set<number>();
     const a = new Set<string>();
     const j = new Set<string>();
@@ -43,14 +48,15 @@ export default function SearchPage() {
       (it.authors || []).forEach((x) => x && a.add(x));
       if (it.journal) j.add(it.journal);
       (it.methods || []).forEach((x) => x && m.add(x));
-      (it.theories || []).forEach((x) => x && t.add(x));
+      const ds = getDataset(it);
+      if (ds) t.add(ds);
     }
     return {
       years: Array.from(y).sort((A, B) => B - A),
       authors: uniqSorted(Array.from(a)),
       journals: uniqSorted(Array.from(j)),
       methods: uniqSorted(Array.from(m)),
-      theories: uniqSorted(Array.from(t)),
+      datasets: uniqSorted(Array.from(t)),
     };
   }, [articles]);
 
@@ -60,7 +66,7 @@ export default function SearchPage() {
   const [author, setAuthor] = useState("all");
   const [journal, setJournal] = useState("all");
   const [method, setMethod] = useState("all");
-  const [theory, setTheory] = useState("all");
+  const [dataset, setDataset] = useState("all");
   const [onlyHistorical, setOnlyHistorical] = useState(false);
   const [onlyComparative, setOnlyComparative] = useState(false);
   const [onlyInterdisciplinary, setOnlyInterdisciplinary] = useState(false);
@@ -71,7 +77,7 @@ export default function SearchPage() {
     setAuthor("all");
     setJournal("all");
     setMethod("all");
-    setTheory("all");
+    setDataset("all");
     setOnlyHistorical(false);
     setOnlyComparative(false);
     setOnlyInterdisciplinary(false);
@@ -90,8 +96,8 @@ export default function SearchPage() {
         a.journal,
         ...(a.authors || []),
         ...(a.methods || []),
-        ...(a.theories || []),
         ...(a.keywords || []),
+        getDataset(a),
       ]
         .filter(Boolean)
         .join(" ")
@@ -104,8 +110,8 @@ export default function SearchPage() {
       const matchJournal = journal === "all" || a.journal === journal;
       const matchMethod =
         method === "all" || (a.methods || []).includes(method);
-      const matchTheory =
-        theory === "all" || (a.theories || []).includes(theory);
+      const matchDataset =
+        dataset === "all" || getDataset(a) === dataset;
 
       const r = a.research || {};
       const matchHistorical = !onlyHistorical || !!r.historical;
@@ -118,7 +124,7 @@ export default function SearchPage() {
         matchAuthor &&
         matchJournal &&
         matchMethod &&
-        matchTheory &&
+        matchDataset &&
         matchHistorical &&
         matchComparative &&
         matchInterdisc
@@ -131,7 +137,7 @@ export default function SearchPage() {
     author,
     journal,
     method,
-    theory,
+    dataset,
     onlyHistorical,
     onlyComparative,
     onlyInterdisciplinary,
@@ -206,14 +212,14 @@ export default function SearchPage() {
         </select>
 
         <select
-          value={theory}
-          onChange={(e) => setTheory(e.target.value)}
+          value={dataset}
+          onChange={(e) => setDataset(e.target.value)}
           className="rounded-lg border px-3 py-2"
         >
-          <option value="all">All theories</option>
-          {theories.map((t) => (
-            <option key={t} value={t}>
-              {t}
+          <option value="all">All datasets</option>
+          {datasets.map((d) => (
+            <option key={d} value={d}>
+              {d}
             </option>
           ))}
         </select>
@@ -268,12 +274,12 @@ export default function SearchPage() {
             {a.abstract && (
               <p className="mt-2 text-sm text-zinc-700 line-clamp-3">{a.abstract}</p>
             )}
-            <div className="mt-2 flex flex-wrap gap-2">
-              {(a.theories || []).slice(0, 4).map((t) => (
-                <span key={t} className="rounded-full border bg-zinc-50 px-2 py-0.5 text-[11px]">
-                  {t}
+            <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+              {getDataset(a) && (
+                <span className="rounded-full border bg-zinc-50 px-2 py-0.5">
+                  {getDataset(a)}
                 </span>
-              ))}
+              )}
               {(a.methods || []).slice(0, 3).map((m) => (
                 <span key={m} className="rounded-full border bg-zinc-50 px-2 py-0.5 text-[11px]">
                   {m}
