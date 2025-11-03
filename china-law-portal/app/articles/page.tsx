@@ -23,7 +23,7 @@ export default async function ArticlesPage({
     (a) => a?.title && a.title.trim().length > 2
   );
 
-  const perPage = 50;
+  const perPage = 15;
   const page = Math.max(1, Number(pageParam || 1));
   const total = all.length;
   const pages = Math.max(1, Math.ceil(total / perPage));

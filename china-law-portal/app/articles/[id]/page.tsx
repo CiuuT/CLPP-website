@@ -1,5 +1,6 @@
 // app/articles/[id]/page.tsx
 import data from "@/data/articles.json";
+import { CitationWithCopy } from "./CitationWithCopy";
 
 type Article = {
   id: string;
@@ -67,7 +68,7 @@ export default async function ArticleDetail({
       <p className="mt-1 text-sm text-zinc-700">
         {authors} {a.year ? `· ${a.year}` : ""} {a.journal ? `· ${a.journal}` : ""}
       </p>
-      {a.citation && <p className="mt-2 text-xs text-zinc-500">{a.citation}</p>}
+      {a.citation && <CitationWithCopy citation={a.citation} />}
 
       <div className="mt-4 flex flex-wrap gap-4 text-sm">
         <a href="/articles" className="hover:underline">← Back</a>
