@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "-": "^0.0.1",
+    "@supabase/supabase-js": "^2.81.1",
     "clsx": "^2.1.1",
     "csv-parse": "^6.1.0",
     "csv-parser": "^3.2.0",
