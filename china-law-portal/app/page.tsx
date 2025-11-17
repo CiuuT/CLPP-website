@@ -96,6 +96,13 @@ export default function Home() {
           </button>
         </form>
 
+        <Link
+          href="/test_supabase"
+          className="rounded-lg border px-4 py-2 hover:bg-zinc-50"
+        >
+          Test Supabase
+        </Link>
+
         {/* buttons: same as before */}
         <div className="mt-4 flex gap-3">
           <Link
