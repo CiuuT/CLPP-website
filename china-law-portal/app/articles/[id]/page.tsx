@@ -3,52 +3,70 @@ import data from "@/data/articles.json";
 import { CitationWithCopy } from "./CitationWithCopy";
 
 type Article = {
-  id: string;
+  id: string | number | null;
   title: string;
-  authors?: string[];
-  journal?: string;
-  citation?: string;
-  year?: number | string | null;
-  doi?: string;
-  url?: string;
-  abstract?: string;
-  conclusion?: string;
-  keywords?: string[];
-  methods?: string[];
-  subMethods?: string[];
-  theories?: string[];
-  research?: {
-    questions?: string;
-    answers?: string;
-    notes?: string;
-    historical?: boolean;
-    comparative?: boolean;
-    interdisciplinary?: boolean;
-  };
-  legalSources?: {
-    type?: string;
-    citations?: string;
-    policyDocuments?: string;
-  };
-  data?: {
-    sourceIdentification?: string;
-    authorsDataDescription?: string;
-    sourceDataset?: string;
-  };
-  notes?: string;
-  license?: string;
+  authors?: string | null;
+  year?: string | null;
+  citation?: string | null;
+  journalTitle?: string | null;
+  url?: string | null;
+  doi?: string | null;
+  abstract?: string | null;
+  conclusion?: string | null;
+  keywords?: string | null;
+  researchQuestions?: string | null;
+  answers?: string | null;
+  researchMethods?: string | null;
+  subResearchMethodTypes?: string | null;
+  historicalResearch?: string | boolean | null;
+  comparativeResearch?: string | boolean | null;
+  interdisciplinaryResearch?: string | boolean | null;
+  researchTheoriesReliedOn?: string | null;
+  researchTheoriesCritiqued?: string | null;
+  typeOfLegalSources?: string | null;
+  legalSourcesCitations?: string | null;
+  policyDocuments?: string | null;
+  dataSourceIdentification?: string | null;
+  authorsDataDescription?: string | null;
+  accessibility?: string | null;
+  dataAccessibilityLink?: string | null;
+  sourceDataset?: string | null;
+  articleLicenseType?: string | null;
+  aiSummaries?: string | null;
+  aiDataDescription?: string | null;
 };
+
+function splitToTags(value?: string | null) {
+  if (!value) return [];
+
+  return value
+    .split(/;|,/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function displayValue(value?: string | boolean | null) {
+  if (value == null) return "N/A";
+  if (typeof value === "string" && value.trim() === "") return "N/A";
+  return String(value);
+}
+
+function hasDisplayValue(value?: string | boolean | null) {
+  if (value == null) return false;
+  if (typeof value === "string" && value.trim() === "") return false;
+  return true;
+}
 
 export default async function ArticleDetail({
   params,
 }: {
-  // 👇 Next 15/16 can pass params as a Promise — we await it.
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;               // ✅ keep await (as you want)
+  const { id } = await params;              
   const decoded = decodeURIComponent(id);
 
-  const a = (data as Article[]).find((x) => String(x.id) === decoded);
+  const articles = data as unknown as Article[];
+  const a = articles.find((x) => String(x.id) === decoded);
 
   if (!a) {
     return (
@@ -60,110 +78,239 @@ export default async function ArticleDetail({
     );
   }
 
-  const authors = (a.authors || []).join("; ");
+  const authors = a.authors ?? "";
+  const keywordList = splitToTags(a.keywords);
 
-  return (
+  const display = {
+  research: {
+    questions: a.researchQuestions,
+    answers: a.answers,
+    methods: a.researchMethods,
+    subMethods: a.subResearchMethodTypes,
+    historical: a.historicalResearch,
+    comparative: a.comparativeResearch,
+    interdisciplinary: a.interdisciplinaryResearch,
+    theoriesReliedOn: a.researchTheoriesReliedOn,
+    theoriesCritiqued: a.researchTheoriesCritiqued,
+  },
+  legalSources: {
+    type: a.typeOfLegalSources,
+    citations: a.legalSourcesCitations,
+    policyDocuments: a.policyDocuments,
+  },
+  data: {
+    sourceIdentification: a.dataSourceIdentification,
+    authorsDataDescription: a.authorsDataDescription,
+    accessibility: a.accessibility,
+    dataAccessibilityLink: a.dataAccessibilityLink,
+    sourceDataset: a.sourceDataset,
+  },
+  ai: {
+    summaries: a.aiSummaries,
+    dataDescription: a.aiDataDescription,
+  }, };
+
+  const doiHref =
+    a.doi && a.doi.startsWith("http") 
+      ? a.doi 
+      : a.doi 
+        ? `https://doi.org/${a.doi}` 
+        : null;
+  
+    return (
     <article className="mx-auto max-w-3xl px-6 py-10">
       <h1 className="text-3xl font-bold">{a.title}</h1>
+
       <p className="mt-1 text-sm text-zinc-700">
-        {authors} {a.year ? `· ${a.year}` : ""} {a.journal ? `· ${a.journal}` : ""}
+        {authors || "N/A"}
+        {a.year ? ` · ${a.year}` : " · N/A"}
+        {a.journalTitle ? ` · ${a.journalTitle}` : " · N/A"}
       </p>
-      {a.citation && <CitationWithCopy citation={a.citation} />}
+
+      {a.citation ? (
+        <CitationWithCopy citation={a.citation} />
+      ) : (
+        <div className="mt-3 text-sm text-zinc-500">Citation: N/A</div>
+      )}
 
       <div className="mt-4 flex flex-wrap gap-4 text-sm">
-        <a href="/articles" className="hover:underline">← Back</a>
-        {a.url && <a className="hover:underline" href={a.url} target="_blank">Source ↗</a>}
-        {a.doi && <a className="hover:underline" href={a.doi} target="_blank">DOI ↗</a>}
+        <a href="/articles" className="hover:underline">
+          ← Back
+        </a>
+
+        {a.url ? (
+          <a href={a.url} target="_blank" rel="noreferrer" className="hover:underline">
+            Source ↗
+          </a>
+        ) : (
+          <span className="text-zinc-500">Source: N/A</span>
+        )}
+
+        {doiHref ? (
+          <a href={doiHref} target="_blank" rel="noreferrer" className="hover:underline">
+            DOI ↗
+          </a>
+        ) : (
+          <span className="text-zinc-500">DOI: N/A</span>
+        )}
       </div>
 
-      {a.abstract && (
-        <>
-          <h2 className="mt-8 text-lg font-semibold">Abstract</h2>
-          <p className="mt-2 whitespace-pre-wrap">{a.abstract}</p>
-        </>
-      )}
+      <>
+        <h2 className="mt-8 text-lg font-semibold">Abstract</h2>
+        <p className="mt-2 whitespace-pre-wrap">{displayValue(a.abstract)}</p>
+      </>
 
-      {a.conclusion && (
-        <>
-          <h2 className="mt-8 text-lg font-semibold">Conclusion</h2>
-          <p className="mt-2 whitespace-pre-wrap">{a.conclusion}</p>
-        </>
-      )}
+      <>
+        <h2 className="mt-8 text-lg font-semibold">Conclusion</h2>
+        <p className="mt-2 whitespace-pre-wrap">{displayValue(a.conclusion)}</p>
+      </>
 
-      {a.theories?.length ? (
-        <>
-          <h2 className="mt-8 text-lg font-semibold">Theories / Frameworks</h2>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {a.theories.map((t) => (
-              <span key={t} className="rounded-full border bg-zinc-50 px-2 py-0.5 text-[12px]">
-                {t}
+      <>
+        <h2 className="mt-8 text-lg font-semibold">Keywords</h2>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {keywordList.length > 0 ? (
+            keywordList.map((keyword) => (
+              <span
+                key={keyword}
+                className="rounded-full border bg-zinc-50 px-3 py-1 text-sm text-zinc-700"
+              >
+                {keyword}
               </span>
-            ))}
+            ))
+          ) : (
+            <span className="rounded-full border bg-zinc-50 px-3 py-1 text-sm text-zinc-500">
+              N/A
+            </span>
+          )}
+        </div>
+      </>
+
+      <details className="mt-8 rounded-lg border border-zinc-200 bg-white p-4">
+        <summary className="cursor-pointer text-lg font-semibold">Research</summary>
+
+        <div className="mt-3">
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Questions:</strong> {displayValue(display.research.questions)}
+          </p>
+
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Answers:</strong> {displayValue(display.research.answers)}
+          </p>
+
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Methods:</strong> {displayValue(display.research.methods)}
+          </p>
+
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Sub-method Types:</strong> {displayValue(display.research.subMethods)}
+          </p>
+
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Theories Relied On:</strong> {displayValue(display.research.theoriesReliedOn)}
+          </p>
+
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Theories Critiqued:</strong> {displayValue(display.research.theoriesCritiqued)}
+          </p>
+
+          <div className="mt-3 space-y-2 text-sm text-zinc-700">
+            <p>
+              <strong>Historical Research:</strong> {displayValue(display.research.historical)}
+            </p>
+            <p>
+              <strong>Comparative Research:</strong> {displayValue(display.research.comparative)}
+            </p>
+            <p>
+              <strong>Interdisciplinary Research:</strong>{" "}
+              {displayValue(display.research.interdisciplinary)}
+            </p>
           </div>
-        </>
-      ) : null}
+        </div>
+      </details>
 
-      {(a.methods?.length || a.subMethods?.length) && (
-        <>
-          <h2 className="mt-8 text-lg font-semibold">Methods</h2>
-          {a.methods?.length ? <p className="mt-2 text-sm text-zinc-700">{a.methods.join("; ")}</p> : null}
-          {a.subMethods?.length ? <p className="mt-2 text-sm text-zinc-700">{a.subMethods.join("; ")}</p> : null}
-        </>
-      )}
+      <details className="mt-8 rounded-lg border border-zinc-200 bg-white p-4">
+        <summary className="cursor-pointer text-lg font-semibold">Legal Sources</summary>
 
-      {a.research && (a.research.questions || a.research.answers || a.research.notes) && (
-        <>
-          <h2 className="mt-8 text-lg font-semibold">Research Q&A</h2>
-          {a.research.questions && <p className="mt-2 whitespace-pre-wrap"><strong>Questions:</strong> {a.research.questions}</p>}
-          {a.research.answers && <p className="mt-2 whitespace-pre-wrap"><strong>Answers:</strong> {a.research.answers}</p>}
-          {a.research.notes && <p className="mt-2 whitespace-pre-wrap text-zinc-700"><strong>Notes:</strong> {a.research.notes}</p>}
-          <div className="mt-3 text-sm text-zinc-700">
-            {a.research.historical && <span className="mr-2 rounded-full bg-zinc-100 px-2 py-0.5">Historical</span>}
-            {a.research.comparative && <span className="mr-2 rounded-full bg-zinc-100 px-2 py-0.5">Comparative</span>}
-            {a.research.interdisciplinary && <span className="mr-2 rounded-full bg-zinc-100 px-2 py-0.5">Interdisciplinary</span>}
-          </div>
-        </>
-      )}
+        <div className="mt-3">
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Type:</strong> {displayValue(display.legalSources.type)}
+          </p>
 
-      {(a.legalSources?.type || a.legalSources?.citations || a.legalSources?.policyDocuments) && (
-        <>
-          <h2 className="mt-8 text-lg font-semibold">Legal Sources</h2>
-          {a.legalSources?.type && <p className="mt-2"><strong>Type:</strong> {a.legalSources.type}</p>}
-          {a.legalSources?.citations && <p className="mt-2 whitespace-pre-wrap"><strong>Citations:</strong> {a.legalSources.citations}</p>}
-          {a.legalSources?.policyDocuments && <p className="mt-2 whitespace-pre-wrap"><strong>Policy docs:</strong> {a.legalSources.policyDocuments}</p>}
-        </>
-      )}
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Citations:</strong> {displayValue(display.legalSources.citations)}
+          </p>
 
-      {(a.data?.sourceIdentification || a.data?.authorsDataDescription || a.data?.sourceDataset) && (
-        <>
-          <h2 className="mt-8 text-lg font-semibold">Data</h2>
-          {a.data?.sourceIdentification && (
-            <p className="mt-2 whitespace-pre-wrap">
-              <strong>Data Source Identification:</strong>{" "}
-              {a.data.sourceIdentification}
-            </p>
-          )}
-          {a.data?.authorsDataDescription && (
-            <p className="mt-2 whitespace-pre-wrap">
-              <strong>Author&apos;s Data Description:</strong>{" "}
-              {a.data.authorsDataDescription}
-            </p>
-          )}
-          {a.data?.sourceDataset && (
-            <p className="mt-2 whitespace-pre-wrap">
-              <strong>Source Dataset:</strong> {a.data.sourceDataset}
-            </p>
-          )}
-        </>
-      )}
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Policy Documents:</strong> {displayValue(display.legalSources.policyDocuments)}
+          </p>
+        </div>
+      </details>
 
-      {(a.license || a.notes) && (
-        <>
-          <h2 className="mt-8 text-lg font-semibold">Notes & License</h2>
-          {a.notes && <p className="mt-2 whitespace-pre-wrap">{a.notes}</p>}
-          {a.license && <p className="mt-2 text-sm text-zinc-700"><strong>License:</strong> {a.license}</p>}
-        </>
-      )}
+      <details className="mt-8 rounded-lg border border-zinc-200 bg-white p-4">
+        <summary className="cursor-pointer text-lg font-semibold">Data</summary>
+
+        <div className="mt-3">
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Data Source Identification:</strong>{" "}
+            {displayValue(display.data.sourceIdentification)}
+          </p>
+
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Author&apos;s Data Description:</strong>{" "}
+            {displayValue(display.data.authorsDataDescription)}
+          </p>
+
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Accessibility:</strong> {displayValue(display.data.accessibility)}
+          </p>
+
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Data Accessibility Link:</strong>{" "}
+            {hasDisplayValue(display.data.dataAccessibilityLink) ? (
+              <a
+                href={String(display.data.dataAccessibilityLink)}
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                {String(display.data.dataAccessibilityLink)}
+              </a>
+            ) : (
+              "N/A"
+            )}
+          </p>
+
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>Source Dataset:</strong> {displayValue(display.data.sourceDataset)}
+          </p>
+        </div>
+      </details>
+
+      <details className="mt-8 rounded-lg border border-zinc-200 bg-white p-4">
+        <summary className="cursor-pointer text-lg font-semibold">
+          AI-generated Information
+        </summary>
+
+        <div className="mt-3">
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>AI Summaries:</strong> {displayValue(display.ai.summaries)}
+          </p>
+
+          <p className="mt-2 whitespace-pre-wrap">
+            <strong>AI Data Description:</strong> {displayValue(display.ai.dataDescription)}
+          </p>
+        </div>
+      </details>
+
+      <details className="mt-8 rounded-lg border border-zinc-200 bg-white p-4">
+        <summary className="cursor-pointer text-lg font-semibold">License</summary>
+
+        <div className="mt-3">
+          <p className="text-sm text-zinc-700">
+            <strong>License:</strong> {displayValue(a.articleLicenseType)}
+          </p>
+        </div>
+      </details>
     </article>
   );
 }

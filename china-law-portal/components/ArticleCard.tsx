@@ -3,12 +3,12 @@ import Link from "next/link";
 type Article = {
   id: string;
   title: string;
-  authors?: string[];
+  authors?: string;
   abstract?: string;
 };
 
 export default function ArticleCard({ a }: { a: Article }) {
-  const authors = (a.authors || []).filter(Boolean).join("; ");
+  const authors = a.authors;
 
   return (
     <Link

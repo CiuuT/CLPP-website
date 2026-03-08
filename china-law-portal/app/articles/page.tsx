@@ -4,7 +4,7 @@ import ArticleCard from "@/components/ArticleCard";
 
 type Article = Parameters<typeof ArticleCard>[0]["a"];
 
-// 🔑 Mark dynamic because output depends on ?page=
+// Mark dynamic because output depends on ?page=
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -14,13 +14,13 @@ export default async function ArticlesPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  // ✅ keep await (as you requested)
+  // keep await 
   const sp = await searchParams;
   const pageParam = Array.isArray(sp.page) ? sp.page[0] : sp.page;
 
   // Use a stable array once, then paginate
   const all = (data as Article[]).filter(
-    (a) => a?.title && a.title.trim().length > 2
+    (a) => typeof a.title === "string" && a.title.trim().length > 2
   );
 
   const perPage = 15;
